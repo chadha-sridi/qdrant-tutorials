@@ -15,7 +15,7 @@ qdrant_client = AsyncQdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY, timeou
 dense_model = TextEmbedding(model_name="BAAI/bge-base-en-v1.5")
 colbert_model = LateInteractionTextEmbedding(model_name="colbert-ir/colbertv2.0")
 # === Collection creation ===
-COLLECTION_NAME = "demo_collection"
+COLLECTION_NAME = "demo_collection1"
 async def init_vectdb():
     collections_response = await qdrant_client.get_collections()
     exists = any(c.name == COLLECTION_NAME for c in collections_response.collections)
@@ -36,7 +36,8 @@ async def init_vectdb():
                     distance=models.Distance.COSINE,
                     multivector_config=models.MultiVectorConfig(
                         comparator=models.MultiVectorComparator.MAX_SIM
-                    )
+                    ), 
+                    hnsw_config=models.HnswConfigDiff(m=0) #Disable HNSW for ColBERT
                 )
             },
         )
