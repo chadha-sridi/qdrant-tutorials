@@ -12,9 +12,9 @@ from config import qdrant_client, dense_model, colbert_model, COLLECTION_NAME
 logger = logging.getLogger(__name__)
 
 # TEXT SPLITTER
-CHUNK_SIZE = 1500
-CHUNK_OVERLAP = 200
-MIN_CHUNK_LENGTH = 300
+CHUNK_SIZE = 500
+CHUNK_OVERLAP = 50
+MIN_CHUNK_LENGTH = 200
 SEPARATORS = ["\n\n", "\n", ".", ";", ",", " "]
 
 text_splitter = RecursiveCharacterTextSplitter(
