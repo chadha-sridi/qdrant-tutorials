@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 
 async def advanced_discovery_search(user_id: str, query_text: str, top_k: int = 5):
     # Generate query embeddings
-    query_dense = list(dense_model.embed([query_text]))[0].tolist()
-    query_multivector = list(colbert_model.embed([query_text]))[0].tolist()
+    query_dense = list(dense_model.query_embed([query_text]))[0].tolist()
+    query_multivector = list(colbert_model.query_embed([query_text]))[0].tolist()
     response = await qdrant_client.query_points(
         collection_name=COLLECTION_NAME,
         query_filter=models.Filter(
@@ -40,7 +40,7 @@ async def advanced_discovery_search(user_id: str, query_text: str, top_k: int = 
                             ]),
                             # Boost by Year: 
                             models.MultExpression(mult=[
-                                0.05, 
+                                0.005,
                                 models.SumExpression(sum=["published_year", -2000.0])
                             ])
                         ]
@@ -59,4 +59,11 @@ async def advanced_discovery_search(user_id: str, query_text: str, top_k: int = 
     return response.points
 
 if __name__ == "__main__":
-    asyncio.run(advanced_discovery_search(user_id="demo_user", query_text="what is bidirectional attention"))
+    query_text = "what is bidirectional attention"
+    points = asyncio.run(
+        advanced_discovery_search(user_id="demo_user", query_text=query_text)
+    )
+    print(f"Query: {query_text}")
+    for point in points:
+        print(f"Score: {point.score}")
+        print(point.payload)

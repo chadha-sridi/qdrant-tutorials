@@ -1,22 +1,39 @@
 import os
 import logging
-import asyncio
+from pathlib import Path
 from dotenv import load_dotenv
 from qdrant_client import AsyncQdrantClient, models
 from fastembed import TextEmbedding, LateInteractionTextEmbedding 
 logger = logging.getLogger(__name__)
-load_dotenv()
+load_dotenv(Path(__file__).with_name(".env"))
 
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+missing_settings = [
+    name
+    for name, value in {
+        "QDRANT_URL": QDRANT_URL,
+        "QDRANT_API_KEY": QDRANT_API_KEY,
+    }.items()
+    if not value
+]
+if missing_settings:
+    raise RuntimeError(
+        "Missing required settings: "
+        + ", ".join(missing_settings)
+        + ". Copy .env.example to .env and fill in the values."
+    )
+
 qdrant_client = AsyncQdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY, timeout=300)
 
 # Embedding models 
 dense_model = TextEmbedding(model_name="BAAI/bge-base-en-v1.5")
 colbert_model = LateInteractionTextEmbedding(model_name="colbert-ir/colbertv2.0")
 # === Collection creation ===
-COLLECTION_NAME = "demo_collection1"
-async def init_vectdb():
+COLLECTION_NAME = "demo_collection"
+
+
+async def ensure_collection():
     collections_response = await qdrant_client.get_collections()
     exists = any(c.name == COLLECTION_NAME for c in collections_response.collections)
 
@@ -61,7 +78,4 @@ async def init_vectdb():
                 field_name=field,
                 field_schema=schema,
             )
-        logger.info("Vector Database initialized.")
-
-if __name__ == "__main__":
-    asyncio.run(init_vectdb())
+        logger.info("Collection initialized.")

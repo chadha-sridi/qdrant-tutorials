@@ -1,0 +1,8 @@
+qdrant-client[fastembed]
+python-dotenv
+httpx
+langchain-core
+langchain-community
+langchain-text-splitters
+arxiv<2.2
+pymupdf
